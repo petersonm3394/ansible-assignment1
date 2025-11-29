@@ -1,0 +1,32 @@
+---
+- name: Setup Router Hostnames and Interface descriptions
+  hosts: routers  
+  gather_facts: no
+  tasks:
+    - name: Change Router Hostnames
+      ios_config: 
+        lines: 
+          - hostname {{ device_hostname }}
+        save_when: modified
+
+    - name: Set E0/0 interface descriptions
+      ios_config:
+        parents: interface e0/0
+        lines:
+          - description {{ interface_description }}
+        save_when: modified
+
+    - name: Get Hostname
+      ios_command:
+        commands: show run | include hostname
+      register: hostname
+
+
+    - name: Get Description
+      ios_command:
+        commands: show run | include description
+      register: desc
+
+    - name: Display changes
+      debug:
+        msg: " {{ inventory_hostname }}: {{ hostname.stdout_lines }} {{ desc.stdout_lines }}"
